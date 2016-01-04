@@ -1,4 +1,4 @@
 {
-   "/":"discovering.cs.wisc.edu:10000",
-   "/fa15/":"discovering.cs.wisc.edu:10001"
+    "/":"http://discovering.cs.wisc.edu:80",
+    "fa15":"http://localhost:61453"
 }

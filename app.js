@@ -20,11 +20,58 @@ catch(e){
 
 console.log(manifest);
 
-for(var m in manifest){
-    app.get(m+"/*", function(req, res){
-	res.redirect(manifest[m]);
+app.get("/", function(req, res){
+    res.redirect(manifest["/"]);
+})
+
+app.get("/:branch", function(req, res){
+    var loc = req.params.branch;
+    if(manifest[loc])
+	res.redirect(manifest[loc]);
+    else
+	res.redirect(manifest["/"]+"/"+loc)
+})
+
+app.get("/:branch/*", function(req, res){
+    var loc = req.params.branch;
+    if(manifest[loc])
+	res.redirect(manifest[loc]+"/" + req.params[0]);
+    else
+	res.redirect(manifest["/"]+"/"+loc+"/" + req.params[0])
+})
+
+function proxy_req(client_req,client_res,loc,path){
+    if(!(manifest[loc])){
+	client_res.send("Error");
+    }
+    
+    var options = {
+	"hostname": "discovering.cs.wisc.edu",
+	"port": manifest[loc],
+	"path": path,
+	"method": 'GET'
+    };
+
+    console.log(options);
+    var proxy = http.request(options, function (res) {
+	res.pipe(client_res, {
+	    end: true
+	});
     });
+
+    client_req.pipe(proxy, {
+	end: true
+    });
+
+    proxy.end()
 }
+
+// for(var m in manifest){
+//     function f(loc){
+// 	console.log("loc",loc);
+//     }
+//     f(m);
+// }
 
 server = http.createServer(app).listen(parseInt(args[0]));
 console.log("Server running...");
